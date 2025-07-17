@@ -7,7 +7,7 @@ void tearDown(void) {};
 
 void test_isPositive(void)
 {
-    int testReturn = isPositive(-3);
+    int testReturn = isPositive(2);
     TEST_ASSERT_EQUAL(1, testReturn);
 };
 
