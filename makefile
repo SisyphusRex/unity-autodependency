@@ -33,14 +33,16 @@ PATHI = include/
 
 # Find source code recursively
 SRCT = $(shell find $(PATHT) -name "*.c")
-
+SRCS = $(shell find $(PATHS) -name "*.c")
 
 COMPILE=gcc -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
+
 CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHI) -DTEST
 
 RESULTS = $(patsubst $(PATHT)%Test.c,$(PATHR)%Test.txt,$(SRCT))
+DEPENDS = $(patsubst $(PATHS)%.c,$(PATHD)%.d,$(SRCS))
 
 PASSED = `grep -r -s PASS $(PATHR)`
 FAIL = `grep -r -s FAIL $(PATHR)`
@@ -65,7 +67,8 @@ $(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.
 
 $(PATHOT)%.o:: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) $< -o $@
+	@$(MKDIR)
+	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOT)%.o=$(PATHD)%.d)" $< -o $@
 
 $(PATHOS)%.o:: $(PATHS)%.c
 	@$(MKDIR) $(dir $@)
@@ -78,6 +81,8 @@ $(PATHOU)%.o:: $(PATHU)%.c $(PATHU)%.h
 $(PATHD)%.d:: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
 	$(DEPEND) $@ $<
+
+-include $(DEPENDS)
 
 clean:
 	$(CLEANUP) $(PATHB)
