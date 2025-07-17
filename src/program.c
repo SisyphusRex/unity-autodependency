@@ -1,5 +1,6 @@
+#include "utils/math.h"
+
 #include <stdio.h>
-#include "modules/mod1.h"
 
 //
 //
@@ -37,6 +38,10 @@ int run(int argc, char *args[])
     {
         printf("%d is even.\n", x);
     }
+
+    int a = 1;
+    int b = 2;
+    int sum = addInts(a, b);
 
     return 0;
 }
