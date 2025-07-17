@@ -1,0 +1,1 @@
+https://github.com/rstinejr/C-Plus-Plus-Template/blob/master/Makefile.inc

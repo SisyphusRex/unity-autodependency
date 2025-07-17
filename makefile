@@ -43,12 +43,13 @@ CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHI) -DTEST
 
 RESULTS = $(patsubst $(PATHT)%Test.c,$(PATHR)%Test.txt,$(SRCT))
 DEPENDS = $(patsubst $(PATHS)%.c,$(PATHD)%.d,$(SRCS))
+DEPENDT += $(patsubst $(PATHT)%.c,$(PATHD)%.d,$(SRCT))
 
 PASSED = `grep -r -s PASS $(PATHR)`
 FAIL = `grep -r -s FAIL $(PATHR)`
 IGNORE = `grep -r -s IGNORE $(PATHR)`
 
-test: $(RESULTS)
+test: $(DEPENDS) $(DEPENDT) $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -67,12 +68,12 @@ $(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.
 
 $(PATHOT)%.o:: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
-	@$(MKDIR)
-	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOT)%.o=$(PATHD)%.d)" $< -o $@
+
+	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOS)%.o=$(PATHD)%.d)" $< -o $@
 
 $(PATHOS)%.o:: $(PATHS)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) $< -o $@
+	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOS)%.o=$(PATHD)%.d)" $< -o $@
 
 $(PATHOU)%.o:: $(PATHU)%.c $(PATHU)%.h
 	@$(MKDIR) $(dir $@)
@@ -82,7 +83,13 @@ $(PATHD)%.d:: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
 	$(DEPEND) $@ $<
 
--include $(DEPENDS)
+$(DEPENDS):
+	@$(MKDIR) $(dir $@)
+
+$(DEPENDT):
+	@$(MKDIR) $(dir $@)
+
+-include $(DEPENDS) $(DEPENDT)
 
 clean:
 	$(CLEANUP) $(PATHB)

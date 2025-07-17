@@ -1,0 +1,5 @@
+test/modules/mod1Test.c:17:test_isEven:PASS
+
+-----------------------
+1 Tests 0 Failures 0 Ignored 
+OK
