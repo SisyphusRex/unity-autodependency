@@ -1,0 +1,5 @@
+test/modules/mod2Test.c:11:test_isPositive:FAIL: Expected 1 Was 0
+
+-----------------------
+1 Tests 1 Failures 0 Ignored 
+FAIL
