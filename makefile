@@ -69,7 +69,7 @@ $(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.
 $(PATHOT)%.o:: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
 
-	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOS)%.o=$(PATHD)%.d)" $< -o $@
+	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOT)%.o=$(PATHD)%.d)" $< -o $@
 
 $(PATHOS)%.o:: $(PATHS)%.c
 	@$(MKDIR) $(dir $@)
