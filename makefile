@@ -34,7 +34,7 @@ PATHI = include/
 # Find source code recursively
 SRCT = $(shell find $(PATHT) -name "*.c")
 SRCS = $(shell find $(PATHS) -name "*.c")
-SRCSNOTMAIN = $(shell find $(PATHS) -name "*.c" -not -name "main.c")
+#SRCSNOTMAIN = $(shell find $(PATHS) -name "*.c" -not -name "main.c")
 
 COMPILE=gcc -c
 LINK=gcc
@@ -43,7 +43,7 @@ DEPEND=gcc -MM -MG -MF
 CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHI) -DTEST
 
 RESULTS = $(patsubst $(PATHT)%Test.c,$(PATHR)%Test.txt,$(SRCT))
-SRCOBJECTSNOTMAIN = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCSNOTMAIN))
+#SRCOBJECTSNOTMAIN = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCSNOTMAIN))
 
 
 PASSED = `grep -r -s PASS $(PATHR)`
@@ -63,7 +63,7 @@ $(PATHR)%.txt: $(PATHE)%.$(TARGET_EXTENSION)
 	@$(MKDIR) $(dir $@)
 	-./$< > $@ 2>&1
 
-$(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.o $(SRCOBJECTSNOTMAIN) #$(PATHD)Test%.d
+$(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.o #$(SRCOBJECTSNOTMAIN) #$(PATHD)Test%.d
 	@$(MKDIR) $(dir $@)
 	$(LINK) -o $@ $^
 
