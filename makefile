@@ -17,46 +17,47 @@ endif
 .PHONY: test
 
 # Directory Paths
-PATHU = unity/src/
-PATHS = src/
-PATHI = include/
-PATHT = test/
-PATHB = build/
-PATHD = $(PATHB)depends/
-PATHDS = $(PATHD)src/
-PATHDT = $(PATHD)test/
-PATHO = $(PATHB)objs/
-PATHOS = $(PATHO)src/
-PATHOT = $(PATHO)test/
-PATHOU = $(PATHO)unity/
-PATHR = $(PATHB)results/
-PATHE = $(PATHB)executables/
+PATH_U = unity/src/
+PATH_S = src/
+PATH_I = include/
+PATH_T = test/
+PATH_TB = testbuild/
+PATH_TB_D = $(PATH_TB)depends/
+PATH_TB_D_S = $(PATH_TB_D)src/
+PATH_TB_D_T = $(PATH_TB_D)test/
+PATH_TB_O = $(PATH_TB)objs/
+PATH_TB_O_S = $(PATH_TB_O)src/
+PATH_TB_O_T = $(PATH_TB_O)test/
+PATH_TB_O_U = $(PATH_TB_O)unity/
+PATH_TB_R = $(PATH_TB)results/
+PATH_TB_N = $(PATH_TB)bin/
 
 # Find source code recursively
-SRCT = $(shell find $(PATHT) -name "*.c")
-SRCS = $(shell find $(PATHS) -name "*.c" -not -name "main.c")
+SRC_T = $(shell find $(PATH_T) -name "*.c")
+SRC_S_NOMAIN = $(shell find $(PATH_S) -name "*.c" -not -name "main.c")
 # Get list of objects
-SRCOS = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCS))
-SRCOT = $(patsubst $(PATHT)%.c,$(PATHOT)%.o,$(SRCT))
+SRC_TB_O_S = $(patsubst $(PATH_S)%.c,$(PATH_TB_O_S)%.o,$(SRC_S_NOMAIN))
+SRC_TB_O_T = $(patsubst $(PATH_T)%.c,$(PATH_TB_O_T)%.o,$(SRC_T))
 # Get list of depends files
-DEPENDS = $(patsubst $(PATHOS)%.o,$(PATHDS)%.d,$(SRCOS))
-DEPENDT = $(patsubst $(PATHOT)%.o,$(PATHDT)%.d,$(SRCOT))
-ALLDEPEND = $(DEPENDS) $(DEPENDT)
+DEPEND_TB_S = $(patsubst $(PATH_TB_O_S)%.o,$(PATH_TB_D_S)%.d,$(SRC_TB_O_S))
+DEPEND_TB_T = $(patsubst $(PATH_TB_O_T)%.o,$(PATH_TB_D_T)%.d,$(SRC_TB_O_T))
+ALL_DEPEND_TB = $(DEPEND_TB_S) $(DEPEND_TB_T)
 
 # Compiler Flags
 CC = gcc
-CFLAGS = -I$(PATHU) -I$(PATHI) -DTEST
+CFLAGS = -I$(PATH_I)
+TCFLAGS = $(CFLAGS) -I$(PATH_U) -DTEST
 CPPFLAGS = -MMD -MF
 COMPILE = $(CC) -c
 LINK = $(CC)
 
 
 
-RESULTS = $(patsubst $(PATHT)%Test.c,$(PATHR)%Test.txt,$(SRCT))
+RESULTS = $(patsubst $(PATH_T)%Test.c,$(PATH_TB_R)%Test.txt,$(SRC_T))
 
-PASSED = `grep -r -s PASS $(PATHR)`
-FAIL = `grep -r -s FAIL $(PATHR)`
-IGNORE = `grep -r -s IGNORE $(PATHR)`
+PASSED = `grep -r -s PASS $(PATH_TB_R)`
+FAIL = `grep -r -s FAIL $(PATH_TB_R)`
+IGNORE = `grep -r -s IGNORE $(PATH_TB_R)`
 
 test: $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
@@ -67,43 +68,39 @@ test: $(RESULTS)
 	@echo "$(PASSED)"
 	@echo "\nDONE"
 
-$(PATHR)%.txt: $(PATHE)%.$(TARGET_EXTENSION)
+$(PATH_TB_R)%.txt: $(PATH_TB_N)%.$(TARGET_EXTENSION)
 	@$(MKDIR) $(dir $@)
 	-./$< > $@ 2>&1
 
-$(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOU)unity.o $(SRCOS)
+$(PATH_TB_N)%Test.$(TARGET_EXTENSION): $(PATH_TB_O_T)%Test.o $(PATH_TB_O_U)unity.o $(SRC_TB_O_S)
 	@$(MKDIR) $(dir $@)
 	$(LINK) -o $@ $^
 
-$(PATHOT)%.o: $(PATHT)%.c
+$(PATH_TB_O_T)%.o: $(PATH_T)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) $(CPPFLAGS) "$(@:$(PATHOT)%.o=$(PATHDT)%.d)" $< -o $@
+	$(COMPILE) $(TCFLAGS) $(CPPFLAGS) "$(@:$(PATH_TB_O_T)%.o=$(PATH_TB_D_T)%.d)" $< -o $@
 
-$(PATHOS)%.o: $(PATHS)%.c
+$(PATH_TB_O_S)%.o: $(PATH_S)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) $(CPPFLAGS) "$(@:$(PATHOS)%.o=$(PATHDS)%.d)" $< -o $@
+	$(COMPILE) $(TCFLAGS) $(CPPFLAGS) "$(@:$(PATH_TB_O_S)%.o=$(PATH_TB_D_S)%.d)" $< -o $@
 
-$(PATHOU)%.o:: $(PATHU)%.c $(PATHU)%.h
+$(PATH_TB_O_U)%.o:: $(PATH_U)%.c $(PATH_U)%.h
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) $< -o $@
+	$(COMPILE) $(TCFLAGS) $< -o $@
 
-$(DEPENDS):
-	@$(MKDIR) $(PATHB)
-	@$(MKDIR) $(dir $@)
-
-$(DEPENDT):
-	@$(MKDIR) $(PATHB)
+$(ALL_DEPEND_TB):
+	@$(MKDIR) $(PATH_TB)
 	@$(MKDIR) $(dir $@)
 
--include $(ALLDEPEND)
+-include $(ALL_DEPEND_TB)
 
 clean:
-	$(CLEANUP) $(PATHB)
+	$(CLEANUP) $(PATH_TB)
 	@echo "cleaned"
 
-.PRECIOUS: $(PATHE)%Test.$(TARGET_EXTENSION)
-.PRECIOUS: $(PATHD)%.d
-.PRECIOUS: $(PATHOS)%.o
-.PRECIOUS: $(PATHOT)%.o
-.PRECIOUS: $(PATHOU)%.o
-.PRECIOUS: $(PATHR)%.txt
+.PRECIOUS: $(PATH_TB_N)%Test.$(TARGET_EXTENSION)
+.PRECIOUS: $(PATH_TB_D)%.d
+.PRECIOUS: $(PATH_TB_O_S)%.o
+.PRECIOUS: $(PATH_TB_O_T)%.o
+.PRECIOUS: $(PATH_TB_O_U)%.o
+.PRECIOUS: $(PATH_TB_R)%.txt

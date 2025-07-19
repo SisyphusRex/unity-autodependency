@@ -1,0 +1,5 @@
+test/utils/mathTest.c:11:test_ignore:IGNORE
+
+-----------------------
+1 Tests 0 Failures 1 Ignored 
+OK
