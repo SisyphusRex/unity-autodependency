@@ -16,8 +16,10 @@ endif
 .PHONY: clean
 .PHONY: test
 
+# Directory Paths
 PATHU = unity/src/
 PATHS = src/
+PATHI = include/
 PATHT = test/
 PATHB = build/
 PATHD = $(PATHB)depends/
@@ -29,40 +31,34 @@ PATHOT = $(PATHO)test/
 PATHOU = $(PATHO)unity/
 PATHR = $(PATHB)results/
 PATHE = $(PATHB)executables/
-PATHI = include/
-
-
 
 # Find source code recursively
 SRCT = $(shell find $(PATHT) -name "*.c")
-SRCS = $(shell find $(PATHS) -name "*.c")
-SRCSNOTMAIN = $(shell find $(PATHS) -name "*.c" -not -name "main.c")
-SRCOS = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCSNOTMAIN))
+SRCS = $(shell find $(PATHS) -name "*.c" -not -name "main.c")
+# Get list of objects
+SRCOS = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCS))
 SRCOT = $(patsubst $(PATHT)%.c,$(PATHOT)%.o,$(SRCT))
+# Get list of depends files
 DEPENDS = $(patsubst $(PATHOS)%.o,$(PATHDS)%.d,$(SRCOS))
 DEPENDT = $(patsubst $(PATHOT)%.o,$(PATHDT)%.d,$(SRCOT))
+ALLDEPEND = $(DEPENDS) $(DEPENDT)
+
+# Compiler Flags
+CC = gcc
+CFLAGS = -I$(PATHU) -I$(PATHI) -DTEST
+CPPFLAGS = -MMD -MF
+COMPILE = $(CC) -c
+LINK = $(CC)
 
 
-
-
-
-
-COMPILE=gcc -c
-LINK=gcc
-DEPEND=gcc -MM -MG -MF
-
-CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHI) -DTEST
 
 RESULTS = $(patsubst $(PATHT)%Test.c,$(PATHR)%Test.txt,$(SRCT))
-#SRCOBJECTSNOTMAIN = $(patsubst $(PATHS)%.c,$(PATHOS)%.o,$(SRCSNOTMAIN))
-
-
 
 PASSED = `grep -r -s PASS $(PATHR)`
 FAIL = `grep -r -s FAIL $(PATHR)`
 IGNORE = `grep -r -s IGNORE $(PATHR)`
 
-test: $(DEPENDS) $(DEPENDT) $(RESULTS)
+test: $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -72,21 +68,20 @@ test: $(DEPENDS) $(DEPENDT) $(RESULTS)
 	@echo "\nDONE"
 
 $(PATHR)%.txt: $(PATHE)%.$(TARGET_EXTENSION)
-	@echo $(DEPENDS)
 	@$(MKDIR) $(dir $@)
 	-./$< > $@ 2>&1
 
-$(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOS)%.o $(PATHOU)unity.o $(PATHOS)utils/math.o #$(SRCOBJECTSNOTMAIN) #$(PATHD)Test%.d
+$(PATHE)%Test.$(TARGET_EXTENSION): $(PATHOT)%Test.o $(PATHOU)unity.o $(SRCOS)
 	@$(MKDIR) $(dir $@)
 	$(LINK) -o $@ $^
 
 $(PATHOT)%.o: $(PATHT)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOT)%.o=$(PATHDT)%.d)" $^ -o $@
+	$(COMPILE) $(CFLAGS) $(CPPFLAGS) "$(@:$(PATHOT)%.o=$(PATHDT)%.d)" $< -o $@
 
-$(PATHOS)%.o: $(PATHS)%.c 
+$(PATHOS)%.o: $(PATHS)%.c
 	@$(MKDIR) $(dir $@)
-	$(COMPILE) $(CFLAGS) -MMD -MF"$(@:$(PATHOS)%.o=$(PATHDS)%.d)" $< -o $@
+	$(COMPILE) $(CFLAGS) $(CPPFLAGS) "$(@:$(PATHOS)%.o=$(PATHDS)%.d)" $< -o $@
 
 $(PATHOU)%.o:: $(PATHU)%.c $(PATHU)%.h
 	@$(MKDIR) $(dir $@)
@@ -95,19 +90,12 @@ $(PATHOU)%.o:: $(PATHU)%.c $(PATHU)%.h
 $(DEPENDS):
 	@$(MKDIR) $(PATHB)
 	@$(MKDIR) $(dir $@)
-	touch $@
 
 $(DEPENDT):
 	@$(MKDIR) $(PATHB)
 	@$(MKDIR) $(dir $@)
-	touch $@
 
-#$(PATHD)%.d:: $(PATHT)%.c
-#	@$(MKDIR) $(dir $@)
-#	$(DEPEND) $@ $<
-
--include $(DEPENDS)
--include $(DEPENDT)
+-include $(ALLDEPEND)
 
 clean:
 	$(CLEANUP) $(PATHB)
